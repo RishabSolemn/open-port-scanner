@@ -1,40 +1,43 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Python Port Scanner</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <meta charset="UTF-8">
+  <title>PSX – Port Scanner Xtreme</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h1>Port Scanner (Python + FastAPI)</h1>
-  <form method="post" action="/scan">
-    <label>Domain/IP:
-      <input name="host" placeholder="example.com or 1.2.3.4" required>
-    </label>
-    <label>Ports (e.g., 22,80,443 or 1-1024):
-      <input name="ports" placeholder="leave blank for defaults">
-    </label>
-    <label>Email (optional, saves for hourly scan):
-      <input name="email" type="email" placeholder="you@domain.com">
-    </label>
-    <button type="submit">Scan Now</button>
-  </form>
+  <header>
+    <div class="logo">⚡ PSX – Port Scanner Xtreme ⚡</div>
+  </header>
 
-  {% if message %}<p class="msg">{{ message }}</p>{% endif %}
+  <main class="container">
+    <h2>Scan a Host</h2>
+    <form method="post" action="/scan">
+      <label for="host">Target Host/IP</label>
+      <input type="text" id="host" name="host" placeholder="scanme.nmap.org" required>
 
-  {% if opened %}
-    <h2>Result for {{ host }}</h2>
-    <pre>{{ opened }}</pre>
-  {% endif %}
+      <label for="ports">Ports</label>
+      <input type="text" id="ports" name="ports" placeholder="22,80,443 or 1-1024">
 
-  <h2>Saved Hourly Targets</h2>
-  <ul>
-    {% for t in targets %}
-      <li>{{ t.host }} — email: {{ t.email }} {% if t.ports %}(custom ports){% else %}(default ports){% endif %}</li>
-    {% else %}
-      <li>No saved targets yet.</li>
-    {% endfor %}
-  </ul>
+      <label for="email">Email (optional)</label>
+      <input type="email" id="email" name="email" placeholder="your@email.com">
+
+      <button type="submit">🚀 Scan Now</button>
+    </form>
+
+    {% if message %}
+    <div class="result">
+      <h3>Scan Result</h3>
+      <p>{{ message }}</p>
+      {% if opened %}
+        <p><b>Open Ports:</b> {{ opened }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </main>
+
+  <footer>
+    <p>Powered by PSX – Port Scanner Xtreme</p>
+  </footer>
 </body>
 </html>
-
