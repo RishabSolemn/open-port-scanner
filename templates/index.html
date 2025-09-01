@@ -1,1 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Python Port Scanner</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <h1>Port Scanner (Python + FastAPI)</h1>
+  <form method="post" action="/scan">
+    <label>Domain/IP:
+      <input name="host" placeholder="example.com or 1.2.3.4" required>
+    </label>
+    <label>Ports (e.g., 22,80,443 or 1-1024):
+      <input name="ports" placeholder="leave blank for defaults">
+    </label>
+    <label>Email (optional, saves for hourly scan):
+      <input name="email" type="email" placeholder="you@domain.com">
+    </label>
+    <button type="submit">Scan Now</button>
+  </form>
+
+  {% if message %}<p class="msg">{{ message }}</p>{% endif %}
+
+  {% if opened %}
+    <h2>Result for {{ host }}</h2>
+    <pre>{{ opened }}</pre>
+  {% endif %}
+
+  <h2>Saved Hourly Targets</h2>
+  <ul>
+    {% for t in targets %}
+      <li>{{ t.host }} — email: {{ t.email }} {% if t.ports %}(custom ports){% else %}(default ports){% endif %}</li>
+    {% else %}
+      <li>No saved targets yet.</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
 
