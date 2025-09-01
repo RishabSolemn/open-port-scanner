@@ -8,7 +8,9 @@ from fastapi.templating import Jinja2Templates
 from scanner import scan_ports, parse_port_input
 from models import init_db, add_target, list_targets
 
-PORT = int(os.getenv("PORT", "10000"))  # Render sets PORT
+# Render provides PORT, but uvicorn uses it from env in start command; keeping this is harmless.
+PORT = int(os.getenv("PORT", "10000"))
+
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -16,20 +18,29 @@ templates = Jinja2Templates(directory="templates")
 init_db()
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request):
-    return templates.TemplateResponse("index.html",
-        {"request": request, "targets": list_targets(), "message": ""})
+async def index(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "targets": list_targets(), "message": ""}
+    )
 
 @app.post("/scan", response_class=HTMLResponse)
-def do_scan(request: Request, host: str = Form(...), ports: str = Form(""), email: str = Form("")):
-    plist = parse_port_input(ports)
+async def do_scan(
+    request: Request,
+    host: str = Form(...),
+    ports: str | None = Form(None),
+    email: str | None = Form(None),
+):
+    plist = parse_port_input(ports or "")
     opened = scan_ports(host, plist)
     msg = f"Open ports on {host}: {opened or 'None'}"
-    # Optionally save target for cron if email provided
+
+    # Optionally save target for hourly scans
     if email:
-        from models import add_target
         add_target(host, plist, email)
         msg += " — Target saved for hourly scan."
-    return templates.TemplateResponse("index.html",
-        {"request": request, "targets": list_targets(), "message": msg, "opened": opened, "host": host})
 
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "targets": list_targets(), "message": msg, "opened": opened, "host": host}
+    )
