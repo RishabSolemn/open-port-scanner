@@ -1,43 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>PSX – Port Scanner Xtreme</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
+  <!-- Premium Loader Overlay -->
+  <div id="loader" class="loader hidden">
+    <div class="loader-glow"></div>
+    <div class="loader-ring">
+      <div class="ring"></div>
+      <div class="core">PSX</div>
+    </div>
+    <div class="loader-text">Scanning…</div>
+  </div>
+
   <header>
     <div class="logo">⚡ PSX – Port Scanner Xtreme ⚡</div>
   </header>
 
   <main class="container">
     <h2>Scan a Host</h2>
-    <form method="post" action="/scan">
+
+    <!-- Demo hosts + profiles -->
+    <div class="row">
+      <div class="col">
+        <label for="demo">Demo Hosts</label>
+        <select id="demo" class="select">
+          <option value="">— Select (optional) —</option>
+          <option value="scanme.nmap.org">scanme.nmap.org</option>
+          <option value="example.com">example.com</option>
+          <option value="testphp.vulnweb.com">testphp.vulnweb.com</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Profiles</label>
+        <div class="chips">
+          <button type="button" class="chip" data-ports="22,80,443">Web</button>
+          <button type="button" class="chip" data-ports="22,80,443,8080,8443">Web+</button>
+          <button type="button" class="chip" data-ports="1-1024">Deep (1–1024)</button>
+        </div>
+      </div>
+    </div>
+
+    <form id="scanForm" method="post" action="/scan">
       <label for="host">Target Host/IP</label>
-      <input type="text" id="host" name="host" placeholder="scanme.nmap.org" required>
+      <input type="text" id="host" name="host" placeholder="scanme.nmap.org"
+             pattern="^\\S+$" title="No spaces. Example: scanme.nmap.org" required />
 
       <label for="ports">Ports</label>
-      <input type="text" id="ports" name="ports" placeholder="22,80,443 or 1-1024">
+      <input type="text" id="ports" name="ports" placeholder="22,80,443 or 1-1024" />
 
       <label for="email">Email (optional)</label>
-      <input type="email" id="email" name="email" placeholder="your@email.com">
+      <input type="email" id="email" name="email" placeholder="your@email.com" />
 
-      <button type="submit">🚀 Scan Now</button>
+      <button type="submit" id="scanBtn">🚀 Scan Now</button>
     </form>
 
     {% if message %}
-    <div class="result">
+    <div class="result" id="resultBox">
       <h3>Scan Result</h3>
       <p>{{ message }}</p>
+
+      {% if host %}
+        <p class="meta">
+          {% if resolved_ip %}<span><b>Resolved IP:</b> {{ resolved_ip }}</span>{% endif %}
+          {% if elapsed %}<span><b>Elapsed:</b> {{ elapsed }}s</span>{% endif %}
+        </p>
+      {% endif %}
+
       {% if opened %}
-        <p><b>Open Ports:</b> {{ opened }}</p>
+        <div class="actions">
+          <button class="btn-secondary" id="copyBtn" data-copy="{{ opened }}">Copy Ports</button>
+          <button class="btn-secondary" id="csvBtn" data-host="{{ host }}" data-open="{{ opened }}">Export CSV</button>
+        </div>
+        <p><b>Open Ports:</b> <span id="openPorts">{{ opened }}</span></p>
       {% endif %}
     </div>
     {% endif %}
   </main>
 
   <footer>
-    <p>Powered by PSX – Port Scanner Xtreme</p>
+    <p>Powered by PSX – Port Scanner Xtreme • Scan only with permission</p>
   </footer>
+
+  <script>
+    // Demo host picker
+    const demoSel = document.getElementById('demo');
+    const hostInput = document.getElementById('host');
+    const portsInput = document.getElementById('ports');
+    demoSel?.addEventListener('change', () => {
+      if (demoSel.value) hostInput.value = demoSel.value;
+    });
+
+    // Profile chips -> set ports
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        portsInput.value = chip.dataset.ports || '';
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    // Premium loader: show on submit, hide on load/error
+    const form = document.getElementById('scanForm');
+    const loader = document.getElementById('loader');
+    form?.addEventListener('submit', () => {
+      loader.classList.remove('hidden');
+    });
+    window.addEventListener('pageshow', () => loader.classList.add('hidden'));
+
+    // Copy open ports
+    const copyBtn = document.getElementById('copyBtn');
+    copyBtn?.addEventListener('click', async () => {
+      const text = copyBtn.dataset.copy || '';
+      try { await navigator.clipboard.writeText(text); copyBtn.textContent = 'Copied!'; }
+      catch { copyBtn.textContent = 'Copy failed'; }
+      setTimeout(() => (copyBtn.textContent = 'Copy Ports'), 1200);
+    });
+
+    // Export CSV (host,port)
+    const csvBtn = document.getElementById('csvBtn');
+    csvBtn?.addEventListener('click', () => {
+      const host = csvBtn.dataset.host || '';
+      const open = (csvBtn.dataset.open || '').replace(/[\\[\\]\\s]/g, '');
+      const ports = open ? open.split(',') : [];
+      let csv = 'host,port\\n';
+      ports.forEach(p => { if (p) csv += `${host},${p}\\n`; });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `psx_${host}_open_ports.csv`; a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
 </body>
 </html>
