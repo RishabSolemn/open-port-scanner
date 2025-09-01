@@ -1,27 +1,26 @@
-# cron_scan.py
-from models import list_targets, save_result
-from scanner import scan_ports
+# cron_scan.py  — simple hourly scan with a hard-coded target (no DB)
+from scanner import scan_ports, parse_port_input
 from emailer import send_email
 
-def html_report(host, opened):
-    opened_str = ", ".join(map(str, opened)) if opened else "None"
-    return f"<h3>Hourly Port Scan</h3><p><b>Host:</b> {host}</p><p><b>Open ports:</b> {opened_str}</p>"
+def run():
+    # === EDIT THESE 3 LINES IF YOU WANT ===
+    host = "scanme.nmap.org"     # demo host; or use a host you own/have permission for
+    ports_text = "22,80,443"     # e.g. "1-1024" or "22,80,443"
+    to_email = "rishabsolemn@gmail.com"  # your verified sender/recipient
+    # ======================================
 
-def run_all():
-    targets = list_targets()
-    if not targets:
-        print("No targets configured.")
-        return
-    for t in targets:
-        opened = scan_ports(t["host"], t["ports"])
-        save_result(t["id"], opened)
-        send_email(
-            to_email=t["email"],
-            subject=f"[Scan] {t['host']} open ports: {len(opened)}",
-            html=html_report(t["host"], opened)
-        )
-        print(f"Scanned {t['host']}: {opened}")
+    ports = parse_port_input(ports_text)
+    opened = scan_ports(host, ports)
+
+    html = f"""
+    <h3>Hourly Port Scan Report</h3>
+    <p><b>Host:</b> {host}</p>
+    <p><b>Ports scanned:</b> {ports_text}</p>
+    <p><b>Open Ports:</b> {opened or 'None'}</p>
+    """
+
+    send_email(to_email, f"[Scan] {host} — open: {len(opened)}", html)
+    print(f"Scanned {host}: {opened}")
 
 if __name__ == "__main__":
-    run_all()
-
+    run()
