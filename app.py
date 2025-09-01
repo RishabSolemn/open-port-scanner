@@ -1,14 +1,14 @@
 # app.py
-import os
+import os, time
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from scanner import scan_ports, parse_port_input
+from scanner import scan_ports, parse_port_input, _resolve_host
 from models import init_db, add_target, list_targets
 
-# Render provides PORT, but uvicorn uses it from env in start command; keeping this is harmless.
+# Render provides PORT via env; uvicorn uses it from the start command.
 PORT = int(os.getenv("PORT", "10000"))
 
 app = FastAPI()
@@ -31,16 +31,51 @@ async def do_scan(
     ports: str | None = Form(None),
     email: str | None = Form(None),
 ):
+    host = (host or "").strip()
     plist = parse_port_input(ports or "")
-    opened = scan_ports(host, plist)
-    msg = f"Open ports on {host}: {opened or 'None'}"
 
-    # Optionally save target for hourly scans
-    if email:
-        add_target(host, plist, email)
-        msg += " — Target saved for hourly scan."
+    # Try to resolve once (for display); don't fail the whole request if it can't resolve here.
+    resolved_ip = None
+    try:
+        resolved_ip = _resolve_host(host)
+    except Exception:
+        pass
 
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "targets": list_targets(), "message": msg, "opened": opened, "host": host}
-    )
+    t0 = time.perf_counter()
+    try:
+        opened = scan_ports(host, plist)
+        elapsed = round(time.perf_counter() - t0, 3)
+        msg = f"Open ports on {host}: {opened or 'None'}"
+
+        if email:
+            add_target(host, plist, email)
+            msg += " — Target saved for hourly scan."
+
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "targets": list_targets(),
+                "message": msg,
+                "opened": opened,
+                "host": host,
+                "resolved_ip": resolved_ip,
+                "elapsed": elapsed,
+            }
+        )
+    except Exception:
+        # Friendly message instead of 500
+        hint = ""
+        if host.lower().replace(" ", "") in {"nmap.scanme.org", "scanme.nmap.org"}:
+            hint = " (Tip: correct demo host is 'scanme.nmap.org')"
+        err = f"Could not resolve host '{host}'.{hint}"
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "targets": list_targets(),
+                "message": err,
+                "opened": None,
+                "host": host
+            }
+        )
