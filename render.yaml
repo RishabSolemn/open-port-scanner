@@ -1,1 +1,27 @@
+# render.yaml
+services:
+  - type: web
+    name: port-scanner-web
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        value: "noreply@example.com"
+
+  - type: cron
+    name: port-scanner-hourly
+    env: python
+    schedule: "0 * * * *"   # every hour, at minute 0 (UTC)
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python cron_scan.py"
+    envVars:
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        value: "noreply@example.com"
 
