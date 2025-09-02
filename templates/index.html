@@ -6,33 +6,33 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <!-- Loader Overlay -->
-  <div id="psx-loader" class="psx-loader hidden">
-    <div class="psx-loader-wrap">
+  <!-- ===== Loader Overlay (hidden until submit) ===== -->
+  <div id="psx-loader" class="psx-loader hidden" aria-hidden="true">
+    <div class="psx-loader-wrap" role="status" aria-live="polite">
       <div class="psx-ring"></div>
       <div class="psx-core">PSX</div>
       <div class="psx-sub">Scanning…</div>
     </div>
   </div>
 
-  <!-- Modal (kept hidden until result) -->
-  <div id="resultModal" class="psx-modal">
-    <div class="psx-modal-content">
-      <button class="psx-close" id="modalClose">&times;</button>
-      <h3>Scan Result</h3>
+  <!-- ===== Result Modal (hidden by default) ===== -->
+  <div id="resultModal" class="psx-modal" aria-hidden="true">
+    <div class="psx-modal-content" role="dialog" aria-modal="true" aria-labelledby="psxModalTitle">
+      <button class="psx-close" id="modalClose" aria-label="Close">&times;</button>
+      <h3 id="psxModalTitle">Scan Result</h3>
       <div id="resultBody"></div>
       <div class="modal-actions">
-        <button id="scanAgainBtn" class="btn-primary">Close &amp; Scan Again</button>
+        <button id="scanAgainBtn" class="btn-primary" type="button">Close &amp; Scan Again</button>
       </div>
     </div>
   </div>
 
-  <!-- Header -->
+  <!-- ===== Header ===== -->
   <header>
     <div class="logo">⚡ PSX – Port Scanner Xtreme ⚡</div>
   </header>
 
-  <!-- Main Form -->
+  <!-- ===== Main Form ===== -->
   <main class="container">
     <h2>Scan a Host</h2>
     <form id="scanForm" method="post" action="/scan">
@@ -53,31 +53,32 @@
     <p>Powered by PSX – Port Scanner Xtreme</p>
   </footer>
 
+  <!-- ===== Page Script ===== -->
   <script>
     const form = document.getElementById('scanForm');
     const loader = document.getElementById('psx-loader');
-    const modal = document.getElementById('resultModal');
+    const modal  = document.getElementById('resultModal');
     const resultBody = document.getElementById('resultBody');
     const closeBtn = document.getElementById('modalClose');
     const scanAgainBtn = document.getElementById('scanAgainBtn');
 
-    // Show loader when submitting form
+    // Show loader while request is in flight
     form?.addEventListener('submit', () => {
       loader?.classList.remove('hidden');
+      loader?.setAttribute('aria-hidden', 'false');
     });
 
-    // Hide loader after page reload
-    window.addEventListener('pageshow', () => loader?.classList.add('hidden'));
+    // Hide loader if page restored from cache
+    window.addEventListener('pageshow', () => {
+      loader?.classList.add('hidden');
+      loader?.setAttribute('aria-hidden', 'true');
+    });
 
-    // === Inject server result into modal ===
-    {% if message %}
-      resultBody.innerHTML = `<p>{{ message|safe }}</p>{% if opened %}<p><b>Open Ports:</b> {{ opened }}</p>{% endif %}`;
-      modal.style.display = "flex";
-    {% endif %}
-
-    // Close modal handlers
+    // Close modal helpers
     function closeModal() {
+      if (!modal) return;
       modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
       document.getElementById('host')?.focus();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -85,6 +86,14 @@
     scanAgainBtn?.addEventListener('click', closeModal);
     modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    // ==== Inject server result ONLY into modal (no inline text) ====
+    {% if message %}
+      // Build HTML safely from server values
+      resultBody.innerHTML = `<p>{{ message }}</p>{% if opened %}<p><b>Open Ports:</b> {{ opened }}</p>{% endif %}`;
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+    {% endif %}
   </script>
 </body>
 </html>
