@@ -47,6 +47,28 @@
         <button type="submit" class="btn-primary">🚀 Run Scan</button>
       </form>
     </section>
+
+    {% if message %}
+    <!-- Results Panel -->
+    <section class="panel result-panel">
+      <div class="panel-head">
+        <h2>Scan Result</h2>
+      </div>
+      <div class="result-body">
+        <p class="result-line">{{ message }}</p>
+
+        {% if opened and opened|length > 0 %}
+          <div class="pill-row">
+            {% for p in opened %}
+              <span class="pill pill-open">Port {{ p }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="muted">No open ports found.</p>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
   </main>
 
   <!-- Footer -->
