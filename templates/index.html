@@ -7,7 +7,8 @@
 </head>
 <body>
   <!-- Loader Overlay (hidden until submit) -->
-  <div id="psx-loader" class="psx-loader hidden" aria-hidden="true">
+  <!-- ADDED inline style="display:none" as belt-and-suspenders -->
+  <div id="psx-loader" class="psx-loader hidden" aria-hidden="true" style="display:none">
     <div class="psx-loader-wrap" role="status" aria-live="polite">
       <div class="psx-ring"></div>
       <div class="psx-core">PSX</div>
@@ -62,16 +63,26 @@
     const closeBtn  = document.getElementById('psxClose');
     const againBtn  = document.getElementById('psxScanAgain');
 
+    function showLoader() {
+      // remove class, and force display:grid so even if CSS is cached the element stays hidden until here
+      loader.classList.remove('hidden');
+      loader.style.display = 'grid';
+      loader.setAttribute('aria-hidden', 'false');
+    }
+    function hideLoader() {
+      loader.classList.add('hidden');
+      loader.style.display = 'none';
+      loader.setAttribute('aria-hidden', 'true');
+    }
+
     // show loader while request is in flight
     form?.addEventListener('submit', () => {
-      loader.classList.remove('hidden');
-      loader.setAttribute('aria-hidden', 'false');
+      showLoader();
     });
 
     // hide loader if page restored (bfcache)
     window.addEventListener('pageshow', () => {
-      loader.classList.add('hidden');
-      loader.setAttribute('aria-hidden', 'true');
+      hideLoader();
     });
 
     // inject server result ONLY into modal (no inline blocks anywhere)
@@ -79,6 +90,7 @@
       resultBox.innerHTML = `<p>{{ message }}</p>{% if opened %}<p><b>Open Ports:</b> {{ opened }}</p>{% endif %}`;
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
+      hideLoader(); // ensure loader is not hanging around
     {% endif %}
 
     // close helpers
