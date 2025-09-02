@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
-  <!-- Top Bar -->
+  <!-- Header -->
   <header class="psx-header">
     <div class="psx-shell">
       <h1 class="brand">⚡ PSX — Port Scanner Xtreme</h1>
@@ -15,12 +15,12 @@
     </div>
   </header>
 
+  <!-- Main -->
   <main class="psx-shell">
-    <!-- Form Panel -->
     <section class="panel">
       <div class="panel-head">
         <h2>Scan a Host</h2>
-        <p class="muted">Enter a hostname or IPv4 address. Leave ports empty to use the default curated set.</p>
+        <p class="muted">Enter a hostname or IPv4 address. Leave ports empty to use the default set.</p>
       </div>
 
       <form method="post" action="/scan" class="form-grid">
@@ -43,29 +43,15 @@
           <input type="email" name="email" placeholder="you@example.com" />
         </label>
 
-        <!-- Submit -->
-        <button type="submit" class="btn-run">🚀 Run Scan</button>
+        <!-- Button -->
+        <button type="submit" class="btn-primary">🚀 Run Scan</button>
       </form>
     </section>
-
-    <!-- Results Panel -->
-    {% if message %}
-    <section class="panel result-panel">
-      <div class="panel-head">
-        <h2>Scan Result</h2>
-      </div>
-      <div class="result-body">
-        <p>{{ message }}</p>
-        {% if opened %}
-        <p><b>Open Ports:</b> {{ opened }}</p>
-        {% endif %}
-      </div>
-    </section>
-    {% endif %}
   </main>
 
-  <footer class="psx-footer">
-    <p>Powered by ⚡ PSX — Port Scanner Xtreme</p>
+  <!-- Footer -->
+  <footer class="footer">
+    <p class="muted">Powered by ⚡ PSX — Port Scanner Xtreme</p>
   </footer>
 </body>
 </html>
