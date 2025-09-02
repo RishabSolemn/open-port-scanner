@@ -1,100 +1,79 @@
-/* ===== PSX quick patch (append to the end of styles.css) ===== */
-
-/* 1) Ensure the main form grids nicely even if the class is missing */
-.panel form { display: grid; gap: 16px; }
-.form-grid { display: grid; gap: 16px; }          /* keep your original */
-@media (min-width: 700px){
-  .panel form { grid-template-columns: 1fr 1fr; }
-  .panel form > *:first-child { grid-column: 1 / -1; }
-  .panel form .btn-primary,
-  .panel form .btn-run { grid-column: 1 / -1; }
+/* -------- Tokens -------- */
+:root{
+  --bg: #0b0f14;
+  --panel: #121821;
+  --panel-2: #10151d;
+  --text: #e9eef7;
+  --muted: #9fb0c7;
+  --border: #1f2937;
+  --accentA: #6a11cb;
+  --accentB: #2575fc;
+  --glow: 0 20px 40px rgba(37,117,252,.18), 0 10px 24px rgba(0,0,0,.35);
+  --radius: 14px;
 }
 
-/* 2) Make each field block-level and pretty even if markup varies */
-.panel form label,
-.field { display: block; }
-
-.field .label,
-.panel form label > span:first-child {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 6px;
-  color: #a7c6ff;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: Inter, Segoe UI, Arial, sans-serif;
+  background: var(--bg);
+  color:var(--text);
 }
 
-.field .hint,
-.panel form .hint {
-  display: block;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: .9rem;
-}
-
-/* 3) Inputs – full width, consistent look */
-.panel form input[type="text"],
-.panel form input[type="email"],
-input {
-  width: 100%;
-  padding: 12px 14px;
-  background: #0a0f15;
-  color: var(--text);
-  border: 1px solid #233043;
-  border-radius: 12px;
-  outline: 0;
-  transition: border .2s, box-shadow .2s, transform .02s;
-}
-.panel form input:focus,
-input:focus {
-  border-color: #4b9dff;
-  box-shadow: 0 0 0 4px rgba(75,157,255,.15);
-}
-
-/* 4) Submit button – support both classes */
-.btn-primary,
-.btn-run,
-.panel form button[type="submit"] {
-  margin-top: 8px;
-  padding: 12px 14px;
-  border: 0;
-  border-radius: 12px;
-  color: #fff;
-  font-weight: 900;
-  letter-spacing: .1px;
-  background: linear-gradient(90deg, var(--accentB), var(--accentA));
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(37,117,252,.28);
-}
-.btn-primary:hover,
-.btn-run:hover,
-.panel form button[type="submit"]:hover { filter: brightness(1.06); }
-.btn-primary:active,
-.btn-run:active,
-.panel form button[type="submit"]:active { transform: translateY(1px); }
-
-/* 5) Results panel styles (nice pills for open ports) */
-.result-panel .result-body { margin-top: 6px; }
-.result-line { margin: 2px 0 10px; }
-
-.pill-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.pill {
-  display: inline-block;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: .85rem;
-}
-.pill-open {
-  background: rgba(25,200,125,.12);
-  color: #79f3c2;
-  border: 1px solid rgba(25,200,125,.25);
-}
-
-/* 6) Safety: ensure panels look like cards even if container markup differs */
-.panel {
-  background: linear-gradient(180deg, var(--panel), var(--panel-2));
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 22px;
-  margin: 22px 0;
+/* -------- Header -------- */
+.psx-header{
+  background: linear-gradient(90deg, var(--accentA), var(--accentB));
+  padding: 24px;
+  text-align:center;
   box-shadow: var(--glow);
 }
+.brand{margin:0;font-size:28px;font-weight:900;}
+.tagline{margin:6px 0 0;color:#e6ecff;opacity:.9;}
+
+/* -------- Layout -------- */
+.psx-shell{max-width:700px;margin:0 auto;padding:20px;}
+.panel{
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  margin-top:26px;
+  box-shadow: var(--glow);
+}
+.panel-head h2{margin:0 0 6px;}
+.muted{color:var(--muted)}
+
+/* -------- Form -------- */
+.form-grid{display:flex;flex-direction:column;gap:18px}
+.field .label{display:block;margin-bottom:6px;font-weight:700;color:#a7c6ff}
+.field .hint{margin-top:4px;color:var(--muted);font-size:.9rem}
+input{
+  width:100%;
+  padding:12px 14px;
+  background:#0a0f15;
+  color:var(--text);
+  border:1px solid #233043;
+  border-radius:12px;
+  outline:0;
+}
+input:focus{
+  border-color:#4b9dff;
+  box-shadow:0 0 0 4px rgba(75,157,255,.15);
+}
+.btn-primary{
+  padding:14px;
+  border:0;
+  border-radius:12px;
+  font-weight:900;
+  font-size:1rem;
+  color:#fff;
+  background: linear-gradient(90deg, var(--accentB), var(--accentA));
+  cursor:pointer;
+  box-shadow:0 8px 24px rgba(37,117,252,.28);
+}
+.btn-primary:hover{filter:brightness(1.07)}
+.btn-primary:active{transform:translateY(1px)}
+
+/* -------- Footer -------- */
+.footer{margin:30px 0;text-align:center}
+.footer .muted{font-size:.95rem}
