@@ -1,28 +1,99 @@
-/* ==== Base ==== */
-body {
-  margin: 0;
-  font-family: Inter, Segoe UI, Arial, sans-serif;
-  background: #0d1117;
-  color: #f0f6fc;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PSX – Port Scanner Xtreme</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <!-- ===== Loader Overlay (hidden until submit) ===== -->
+  <div id="psx-loader" class="psx-loader hidden" aria-hidden="true">
+    <div class="psx-loader-wrap" role="status" aria-live="polite">
+      <div class="psx-ring"></div>
+      <div class="psx-core">PSX</div>
+      <div class="psx-sub">Scanning…</div>
+    </div>
+  </div>
 
-/* ==== Header ==== */
-header {
-  background: linear-gradient(90deg, #6a11cb, #2575fc);
-  padding: 1rem;
-  text-align: center;
-  color: white;
-  font-size: 1.6rem;
-  font-weight: 800;
-}
-header .logo { font-size: 1.2rem; }
+  <!-- ===== Result Modal (hidden by default) ===== -->
+  <div id="resultModal" class="psx-modal" aria-hidden="true">
+    <div class="psx-modal-content" role="dialog" aria-modal="true" aria-labelledby="psxModalTitle">
+      <button class="psx-close" id="modalClose" aria-label="Close">&times;</button>
+      <h3 id="psxModalTitle">Scan Result</h3>
+      <div id="resultBody"></div>
+      <div class="modal-actions">
+        <button id="scanAgainBtn" class="btn-primary" type="button">Close &amp; Scan Again</button>
+      </div>
+    </div>
+  </div>
 
-/* ==== Container ==== */
-.container {
-  max-width: 700px;
-  margin: 2rem auto;
-  background: #161b22;
-  border-radius: 14px;
-  padding: 2rem;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-  border: 1px solid
+  <!-- ===== Header ===== -->
+  <header>
+    <div class="logo">⚡ PSX – Port Scanner Xtreme ⚡</div>
+  </header>
+
+  <!-- ===== Main Form ===== -->
+  <main class="container">
+    <h2>Scan a Host</h2>
+    <form id="scanForm" method="post" action="/scan">
+      <label for="host">Target Host/IP</label>
+      <input type="text" id="host" name="host" placeholder="scanme.nmap.org" required />
+
+      <label for="ports">Ports</label>
+      <input type="text" id="ports" name="ports" placeholder="22,80,443 or 1-1024" />
+
+      <label for="email">Email (optional)</label>
+      <input type="email" id="email" name="email" placeholder="you@example.com" />
+
+      <button type="submit">🚀 Scan Now</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>Powered by PSX – Port Scanner Xtreme</p>
+  </footer>
+
+  <!-- ===== Page Script ===== -->
+  <script>
+    const form = document.getElementById('scanForm');
+    const loader = document.getElementById('psx-loader');
+    const modal  = document.getElementById('resultModal');
+    const resultBody = document.getElementById('resultBody');
+    const closeBtn = document.getElementById('modalClose');
+    const scanAgainBtn = document.getElementById('scanAgainBtn');
+
+    // Show loader while request is in flight
+    form?.addEventListener('submit', () => {
+      loader?.classList.remove('hidden');
+      loader?.setAttribute('aria-hidden', 'false');
+    });
+
+    // Hide loader if page restored from cache
+    window.addEventListener('pageshow', () => {
+      loader?.classList.add('hidden');
+      loader?.setAttribute('aria-hidden', 'true');
+    });
+
+    // Close modal helpers
+    function closeModal() {
+      if (!modal) return;
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      document.getElementById('host')?.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    closeBtn?.addEventListener('click', closeModal);
+    scanAgainBtn?.addEventListener('click', closeModal);
+    modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    // ==== Inject server result ONLY into modal (no inline text) ====
+    {% if message %}
+      // Build HTML safely from server values
+      resultBody.innerHTML = `<p>{{ message }}</p>{% if opened %}<p><b>Open Ports:</b> {{ opened }}</p>{% endif %}`;
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+    {% endif %}
+  </script>
+</body>
+</html>
