@@ -77,3 +77,21 @@ input:focus{
 /* -------- Footer -------- */
 .footer{margin:30px 0;text-align:center}
 .footer .muted{font-size:.95rem}
+
+/* --- Results styling --- */
+.result-panel .result-body { margin-top: 6px; }
+.result-line { margin: 2px 0 10px; }
+
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: .85rem;
+}
+.pill-open {
+  background: rgba(25,200,125,.12);
+  color: #79f3c2;
+  border: 1px solid rgba(25,200,125,.25);
+}
