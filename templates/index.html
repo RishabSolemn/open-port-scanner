@@ -4,106 +4,31 @@
   <meta charset="UTF-8" />
   <title>PSX – Port Scanner Xtreme</title>
   <link rel="stylesheet" href="/static/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
-  <!-- Loader Overlay (hidden until submit) -->
-  <!-- ADDED inline style="display:none" as belt-and-suspenders -->
-  <div id="psx-loader" class="psx-loader hidden" aria-hidden="true" style="display:none">
-    <div class="psx-loader-wrap" role="status" aria-live="polite">
-      <div class="psx-ring"></div>
-      <div class="psx-core">PSX</div>
-      <div class="psx-sub">Scanning…</div>
+  <!-- Top Bar -->
+  <header class="psx-header">
+    <div class="psx-shell">
+      <h1 class="brand">⚡ PSX — Port Scanner Xtreme</h1>
+      <p class="tagline">Fast, minimal, and classroom-friendly port scanner</p>
     </div>
-  </div>
-
-  <!-- Result Modal (hidden by default) -->
-  <div id="psx-modal" class="psx-modal" aria-hidden="true">
-    <div class="psx-modal-content" role="dialog" aria-modal="true" aria-labelledby="psxModalTitle">
-      <button class="psx-close" id="psxClose" aria-label="Close">&times;</button>
-      <h3 id="psxModalTitle">Scan Result</h3>
-      <div id="psxResult"></div>
-      <div class="modal-actions">
-        <button id="psxScanAgain" class="btn-primary" type="button">Close &amp; Scan Again</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <header>
-    <div class="logo">⚡ PSX – Port Scanner Xtreme ⚡</div>
   </header>
 
-  <!-- Main Form -->
-  <main class="container">
-    <h2>Scan a Host</h2>
-    <form id="scanForm" method="post" action="/scan">
-      <label for="host">Target Host/IP</label>
-      <input type="text" id="host" name="host" placeholder="scanme.nmap.org" required />
+  <main class="psx-shell">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Scan a Host</h2>
+        <p class="muted">Enter a hostname or IPv4 address. Leave ports empty to use the default curated set.</p>
+      </div>
 
-      <label for="ports">Ports</label>
-      <input type="text" id="ports" name="ports" placeholder="22,80,443 or 1-1024" />
+      <form method="post" action="/scan" class="form-grid">
+        <label class="field">
+          <span class="label">Target Host / IP</span>
+          <input type="text" name="host" placeholder="scanme.nmap.org" required />
+        </label>
 
-      <label for="email">Email (optional)</label>
-      <input type="email" id="email" name="email" placeholder="you@example.com" />
-
-      <button type="submit">🚀 Scan Now</button>
-    </form>
-  </main>
-
-  <footer>
-    <p>Powered by PSX – Port Scanner Xtreme</p>
-  </footer>
-
-  <script>
-    // elements
-    const form = document.getElementById('scanForm');
-    const loader = document.getElementById('psx-loader');
-    const modal  = document.getElementById('psx-modal');
-    const resultBox = document.getElementById('psxResult');
-    const closeBtn  = document.getElementById('psxClose');
-    const againBtn  = document.getElementById('psxScanAgain');
-
-    function showLoader() {
-      // remove class, and force display:grid so even if CSS is cached the element stays hidden until here
-      loader.classList.remove('hidden');
-      loader.style.display = 'grid';
-      loader.setAttribute('aria-hidden', 'false');
-    }
-    function hideLoader() {
-      loader.classList.add('hidden');
-      loader.style.display = 'none';
-      loader.setAttribute('aria-hidden', 'true');
-    }
-
-    // show loader while request is in flight
-    form?.addEventListener('submit', () => {
-      showLoader();
-    });
-
-    // hide loader if page restored (bfcache)
-    window.addEventListener('pageshow', () => {
-      hideLoader();
-    });
-
-    // inject server result ONLY into modal (no inline blocks anywhere)
-    {% if message %}
-      resultBox.innerHTML = `<p>{{ message }}</p>{% if opened %}<p><b>Open Ports:</b> {{ opened }}</p>{% endif %}`;
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden', 'false');
-      hideLoader(); // ensure loader is not hanging around
-    {% endif %}
-
-    // close helpers
-    function closeModal() {
-      modal.style.display = 'none';
-      modal.setAttribute('aria-hidden', 'true');
-      document.getElementById('host')?.focus();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    closeBtn?.addEventListener('click', closeModal);
-    againBtn?.addEventListener('click', closeModal);
-    modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-  </script>
-</body>
-</html>
+        <label class="field">
+          <span class="label">Ports</span>
+          <input type="text" name="ports" placeholder="22,80,443 or 1-1024 (blank = defaults)" />
+          <span class="hint">Examples: <code>22,80,443</code> • <code>1-1024</code> • <code>22,80-90</code>
