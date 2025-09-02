@@ -1,120 +1,75 @@
-/* --------- Design tokens --------- */
-:root{
-  --bg: #0b0f14;
-  --panel: #121821;
-  --panel-2: #10151d;
-  --text: #e9eef7;
-  --muted: #9fb0c7;
-  --border: #1f2937;
-  --accentA: #6a11cb;
-  --accentB: #2575fc;
-  --glow: 0 20px 40px rgba(37,117,252,.18), 0 10px 24px rgba(0,0,0,.35);
-  --radius: 14px;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PSX – Port Scanner Xtreme</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="psx-header">
+    <div class="psx-shell">
+      <h1 class="brand">⚡ PSX — Port Scanner Xtreme</h1>
+      <p class="tagline">Fast, minimal, and classroom-friendly port scanner</p>
+    </div>
+  </header>
 
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: radial-gradient(1200px 600px at 10% -10%, rgba(106,17,203,.12), transparent 60%),
-              radial-gradient(1200px 700px at 110% -10%, rgba(37,117,252,.10), transparent 60%),
-              var(--bg);
-  color:var(--text);
-}
+  <main class="psx-shell">
+    <!-- Form Panel -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Scan a Host</h2>
+        <p class="muted">Enter a hostname or IPv4 address. Leave ports empty to use the default curated set.</p>
+      </div>
 
-/* --------- Layout helpers --------- */
-.psx-shell{max-width:980px;margin:0 auto;padding:0 20px}
+      <form method="post" action="/scan" class="form-grid">
+        <!-- Host -->
+        <label class="field">
+          <span class="label">Target Host / IP</span>
+          <input type="text" name="host" placeholder="scanme.nmap.org" required />
+        </label>
 
-/* --------- Header --------- */
-.psx-header{
-  background: linear-gradient(90deg, var(--accentA), var(--accentB));
-  padding: 28px 0 24px;
-  box-shadow: var(--glow);
-}
-.brand{margin:0;font-size:28px;font-weight:900;letter-spacing:.3px}
-.tagline{margin:6px 0 0;color:#e6ecff;opacity:.9}
+        <!-- Ports -->
+        <label class="field">
+          <span class="label">Ports</span>
+          <input type="text" name="ports" placeholder="22,80,443 or 1-1024 (blank = defaults)" />
+          <span class="hint">Examples: <code>22,80,443</code> • <code>1-1024</code> • <code>22,80-90</code></span>
+        </label>
 
-/* --------- Panels --------- */
-.panel{
-  background: linear-gradient(180deg, var(--panel), var(--panel-2));
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 22px;
-  margin: 22px 0;
-  box-shadow: var(--glow);
-}
-.panel-head h2, .panel-head h3{
-  margin:0 0 6px;
-  letter-spacing:.2px;
-}
-.panel-head p.muted{margin:6px 0 0}
+        <!-- Email -->
+        <label class="field">
+          <span class="label">Email (optional)</span>
+          <input type="email" name="email" placeholder="you@example.com" />
+        </label>
 
-.muted{color:var(--muted)}
+        <!-- Submit -->
+        <button type="submit" class="btn-primary">🚀 Run Scan</button>
+      </form>
+    </section>
 
-/* --------- Form --------- */
-.form-grid{display:grid;gap:16px}
-.field .label{display:block;font-weight:700;margin-bottom:6px;color:#a7c6ff}
-.field .hint{display:block;margin-top:6px;color:var(--muted);font-size:.9rem}
-input{
-  width:100%;
-  padding:12px 14px;
-  background:#0a0f15;
-  color:var(--text);
-  border:1px solid #233043;
-  border-radius:12px;
-  outline:0;
-  transition:border .2s, box-shadow .2s, transform .02s;
-}
-input:focus{
-  border-color:#4b9dff;
-  box-shadow:0 0 0 4px rgba(75,157,255,.15);
-}
-.btn-primary{
-  margin-top:8px;
-  padding:12px 14px;
-  border:0;
-  border-radius:12px;
-  color:#fff;
-  font-weight:900;
-  letter-spacing:.1px;
-  background: linear-gradient(90deg, var(--accentB), var(--accentA));
-  cursor:pointer;
-  box-shadow: 0 8px 24px rgba(37,117,252,.28);
-}
-.btn-primary:hover{filter:brightness(1.06)}
-.btn-primary:active{transform:translateY(1px)}
+    <!-- Results Panel -->
+    {% if message %}
+    <section class="panel result-panel">
+      <div class="panel-head">
+        <h2>Scan Result</h2>
+      </div>
+      <div class="result-body">
+        <p class="result-line">{{ message }}</p>
+        {% if opened %}
+        <div class="pill-row">
+          {% for port in opened %}
+            <span class="pill pill-open">Port {{ port }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+  </main>
 
-/* --------- Results --------- */
-.result-line{margin:2px 0 10px}
-.pill-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.pill{
-  display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:.85rem
-}
-.pill-open{background:rgba(25,200,125,.12);color:#79f3c2;border:1px solid rgba(25,200,125,.25)}
-.port-list{
-  background:#0b1118;border:1px solid var(--border);
-  padding:8px 12px;border-radius:10px;min-height:40px;
-  color:#a6c3ff;font-weight:700
-}
-.note{margin-top:10px;color:var(--muted);font-size:.95rem}
-
-/* --------- Info bullets --------- */
-.bullets{margin:8px 0 0;padding-left:18px}
-.bullets li{margin:6px 0;color:#cfd9ea}
-.tech{color:#a7c6ff;font-weight:800}
-
-/* --------- Footer --------- */
-.footer{margin:26px 0 36px;text-align:center}
-.footer .muted{font-size:.95rem}
-
-/* --------- Responsive --------- */
-@media (min-width: 700px){
-  .form-grid{
-    grid-template-columns: 1fr 1fr;
-    grid-auto-flow: row;
-  }
-  .field:nth-child(1){grid-column:1 / -1}
-  .field:nth-child(2){grid-column:1 / -1}
-  .field:nth-child(3){grid-column:1 / -1}
-  .btn-primary{grid-column:1 / -1}
-}
+  <footer class="footer">
+    <p class="muted">Powered by ⚡ PSX — Port Scanner Xtreme</p>
+  </footer>
+</body>
+</html>
