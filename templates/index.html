@@ -15,69 +15,90 @@
     </div>
   </div>
 
-  <header>
-    <div class="logo">⚡ PSX – Port Scanner Xtreme ⚡</div>
-  </header>
-
-  <main class="container">
-    <h2>Scan a Host</h2>
-
-    <form id="scanForm" method="post" action="/scan">
-      <label for="host">Target Host/IP</label>
-      <input
-        type="text"
-        id="host"
-        name="host"
-        placeholder="scanme.nmap.org"
-        required
-      />
-
-      <label for="ports">Ports (e.g., 22,80,443 or 1-1024)</label>
-      <input
-        type="text"
-        id="ports"
-        name="ports"
-        placeholder="Leave blank for default set"
-      />
-
-      <label for="email">Email (optional)</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        placeholder="you@example.com"
-      />
-
-      <button type="submit">🚀 Scan Now</button>
-    </form>
-
-    {% if message %}
-    <div class="result">
+  <!-- Result Modal -->
+  {% if message %}
+  <div id="resultModal" class="psx-modal">
+    <div class="psx-modal-content" role="dialog" aria-modal="true">
+      <button class="psx-close" id="modalCloseBtn" aria-label="Close">&times;</button>
       <h3>Scan Result</h3>
       <p>{{ message }}</p>
       {% if opened %}
         <p><b>Open Ports:</b> {{ opened }}</p>
       {% endif %}
+      <div class="modal-actions">
+        <button id="scanAgainBtn" class="btn-primary">Close &amp; Scan Again</button>
+      </div>
     </div>
-    {% endif %}
+  </div>
+  <script>
+    // auto-show modal if message exists
+    window.addEventListener("load", () => {
+      const modal = document.getElementById("resultModal");
+      if (modal) modal.style.display = "flex";
+    });
+  </script>
+  {% endif %}
+
+  <!-- Header -->
+  <header>
+    <div class="logo">⚡ PSX – Port Scanner Xtreme ⚡</div>
+  </header>
+
+  <!-- Main Form -->
+  <main class="container">
+    <h2>Scan a Host</h2>
+    <form id="scanForm" method="post" action="/scan">
+      <label for="host">Target Host/IP</label>
+      <input type="text" id="host" name="host" placeholder="scanme.nmap.org" required />
+
+      <label for="ports">Ports</label>
+      <input type="text" id="ports" name="ports" placeholder="22,80,443 or 1-1024" />
+
+      <label for="email">Email (optional)</label>
+      <input type="email" id="email" name="email" placeholder="you@example.com" />
+
+      <button type="submit">🚀 Scan Now</button>
+    </form>
   </main>
 
   <footer>
-    <p>Powered by PSX – Port Scanner Xtreme • Scan only with permission</p>
+    <p>Powered by PSX – Port Scanner Xtreme</p>
   </footer>
 
   <script>
-    // Show loader on submit, hide when page renders (back/forward nav safe)
     const form = document.getElementById('scanForm');
     const loader = document.getElementById('psx-loader');
 
+    // show loader while the request is in-flight
     form?.addEventListener('submit', () => {
       loader?.classList.remove('hidden');
     });
+    // hide loader if page is restored from cache
+    window.addEventListener('pageshow', () => loader?.classList.add('hidden'));
 
-    // If the page is restored from cache (back nav), ensure loader is hidden
-    window.addEventListener('pageshow', () => {
-      loader?.classList.add('hidden');
+    // Modal close handlers (button, overlay, Esc)
+    const modal = document.getElementById('resultModal');
+    const closeBtn = document.getElementById('modalCloseBtn');
+    const scanAgainBtn = document.getElementById('scanAgainBtn');
+    function closeModalAndFocus() {
+      if (!modal) return;
+      modal.style.display = 'none';
+      // focus host + scroll to form
+      const host = document.getElementById('host');
+      host?.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    closeBtn?.addEventListener('click', closeModalAndFocus);
+    scanAgainBtn?.addEventListener('click', closeModalAndFocus);
+    // click outside content closes too
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) closeModalAndFocus();
+    });
+    // Esc to close
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
+        closeModalAndFocus();
+      }
     });
   </script>
 </body>
