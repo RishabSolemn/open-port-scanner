@@ -16,6 +16,7 @@
   </header>
 
   <main class="psx-shell">
+    <!-- Form Panel -->
     <section class="panel">
       <div class="panel-head">
         <h2>Scan a Host</h2>
@@ -23,12 +24,48 @@
       </div>
 
       <form method="post" action="/scan" class="form-grid">
+        <!-- Host -->
         <label class="field">
           <span class="label">Target Host / IP</span>
           <input type="text" name="host" placeholder="scanme.nmap.org" required />
         </label>
 
+        <!-- Ports -->
         <label class="field">
           <span class="label">Ports</span>
           <input type="text" name="ports" placeholder="22,80,443 or 1-1024 (blank = defaults)" />
-          <span class="hint">Examples: <code>22,80,443</code> • <code>1-1024</code> • <code>22,80-90</code>
+          <span class="hint">Examples: <code>22,80,443</code> • <code>1-1024</code> • <code>22,80-90</code></span>
+        </label>
+
+        <!-- Email -->
+        <label class="field">
+          <span class="label">Email (optional)</span>
+          <input type="email" name="email" placeholder="you@example.com" />
+        </label>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-run">🚀 Run Scan</button>
+      </form>
+    </section>
+
+    <!-- Results Panel -->
+    {% if message %}
+    <section class="panel result-panel">
+      <div class="panel-head">
+        <h2>Scan Result</h2>
+      </div>
+      <div class="result-body">
+        <p>{{ message }}</p>
+        {% if opened %}
+        <p><b>Open Ports:</b> {{ opened }}</p>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+  </main>
+
+  <footer class="psx-footer">
+    <p>Powered by ⚡ PSX — Port Scanner Xtreme</p>
+  </footer>
+</body>
+</html>
