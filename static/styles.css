@@ -1,99 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>PSX – Port Scanner Xtreme</title>
-  <link rel="stylesheet" href="/static/styles.css" />
-</head>
-<body>
-  <!-- ===== Loader Overlay (hidden until submit) ===== -->
-  <div id="psx-loader" class="psx-loader hidden" aria-hidden="true">
-    <div class="psx-loader-wrap" role="status" aria-live="polite">
-      <div class="psx-ring"></div>
-      <div class="psx-core">PSX</div>
-      <div class="psx-sub">Scanning…</div>
-    </div>
-  </div>
+/* ==== Base ==== */
+body {
+  margin: 0;
+  font-family: Inter, Segoe UI, Arial, sans-serif;
+  background: #0d1117;
+  color: #f0f6fc;
+}
 
-  <!-- ===== Result Modal (hidden by default) ===== -->
-  <div id="resultModal" class="psx-modal" aria-hidden="true">
-    <div class="psx-modal-content" role="dialog" aria-modal="true" aria-labelledby="psxModalTitle">
-      <button class="psx-close" id="modalClose" aria-label="Close">&times;</button>
-      <h3 id="psxModalTitle">Scan Result</h3>
-      <div id="resultBody"></div>
-      <div class="modal-actions">
-        <button id="scanAgainBtn" class="btn-primary" type="button">Close &amp; Scan Again</button>
-      </div>
-    </div>
-  </div>
+/* ==== Header ==== */
+header {
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  padding: 1rem;
+  text-align: center;
+  color: white;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+header .logo { font-size: 1.2rem; }
 
-  <!-- ===== Header ===== -->
-  <header>
-    <div class="logo">⚡ PSX – Port Scanner Xtreme ⚡</div>
-  </header>
+/* ==== Container ==== */
+.container {
+  max-width: 700px;
+  margin: 2rem auto;
+  background: #161b22;
+  border-radius: 14px;
+  padding: 2rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  border: 1px solid #232a33;
+}
 
-  <!-- ===== Main Form ===== -->
-  <main class="container">
-    <h2>Scan a Host</h2>
-    <form id="scanForm" method="post" action="/scan">
-      <label for="host">Target Host/IP</label>
-      <input type="text" id="host" name="host" placeholder="scanme.nmap.org" required />
+/* ==== Inputs & Buttons ==== */
+label { display:block; margin:1rem 0 0.4rem; font-weight:700; color:#7db0ff; }
+input {
+  width:100%; padding:0.75rem; border-radius:10px;
+  border:1px solid #2b313a; background:#0d1117; color:#f0f6fc;
+  outline:none; transition: border .2s, box-shadow .2s;
+}
+input:focus { border-color:#4b9dff; box-shadow:0 0 0 4px rgba(75,157,255,.15); }
 
-      <label for="ports">Ports</label>
-      <input type="text" id="ports" name="ports" placeholder="22,80,443 or 1-1024" />
+button {
+  margin-top:1.25rem; width:100%; padding:0.95rem;
+  border:none; border-radius:10px; cursor:pointer;
+  background:linear-gradient(90deg,#2575fc,#6a11cb);
+  color:#fff; font-weight:800; font-size:1rem;
+  transition: filter .2s, transform .08s;
+}
+button:hover { filter:brightness(1.06); }
+button:active { transform:translateY(1px); }
 
-      <label for="email">Email (optional)</label>
-      <input type="email" id="email" name="email" placeholder="you@example.com" />
+/* ==== Loader Overlay ==== */
+.psx-loader.hidden { display:none; }
+.psx-loader {
+  position:fixed; inset:0;
+  display:grid; place-items:center;
+  background:rgba(6,10,16,0.55);       /* translucent dimmer */
+  backdrop-filter: blur(6px);
+  z-index:9999;
+}
+.psx-loader-wrap { position:relative; width:160px; height:160px; display:grid; place-items:center; }
+.psx-ring {
+  position:absolute; inset:0; border-radius:50%;
+  border:6px solid transparent;
+  border-top-color:#6a11cb; border-right-color:#2575fc;
+  animation: psx-spin 1s linear infinite;
+  box-shadow: 0 0 24px rgba(106,17,203,.35), 0 0 24px rgba(37,117,252,.35) inset;
+}
+.psx-core { font-weight:900; color:#dbe7ff; font-size:1.3rem; letter-spacing:.5px; }
+.psx-sub  { margin-top:120px; font-size:.9rem; color:#bcd2ff; font-weight:700; }
+@keyframes psx-spin { to { transform: rotate(360deg); } }
 
-      <button type="submit">🚀 Scan Now</button>
-    </form>
-  </main>
+/* ==== Result Modal ==== */
+.psx-modal {
+  display:none; position:fixed; inset:0;
+  background: rgba(0,0,0,.6);
+  justify-content:center; align-items:center;
+  z-index:10000;
+}
+.psx-modal-content {
+  position:relative;
+  background:#161b22; padding:2rem; border-radius:12px;
+  width:90%; max-width:520px;
+  box-shadow:0 12px 40px rgba(0,0,0,.6);
+  border:1px solid #2b313a;
+  animation: psx-fade .18s ease-out;
+}
+.psx-modal-content h3 { margin:0 0 .75rem; color:#7db0ff; }
 
-  <footer>
-    <p>Powered by PSX – Port Scanner Xtreme</p>
-  </footer>
+.psx-close {
+  position:absolute; top:10px; right:14px;
+  font-size:1.6rem; line-height:1; color:#aab3c2;
+  background:none; border:none; cursor:pointer;
+}
+.psx-close:hover { color:#fff; }
 
-  <!-- ===== Page Script ===== -->
-  <script>
-    const form = document.getElementById('scanForm');
-    const loader = document.getElementById('psx-loader');
-    const modal  = document.getElementById('resultModal');
-    const resultBody = document.getElementById('resultBody');
-    const closeBtn = document.getElementById('modalClose');
-    const scanAgainBtn = document.getElementById('scanAgainBtn');
+.modal-actions {
+  display:flex; justify-content:flex-end; margin-top:1rem;
+}
+.btn-primary {
+  width:auto; padding:.7rem 1rem; border-radius:10px; border:none;
+  background:linear-gradient(90deg,#2575fc,#6a11cb);
+  color:#fff; font-weight:800; cursor:pointer;
+}
 
-    // Show loader while request is in flight
-    form?.addEventListener('submit', () => {
-      loader?.classList.remove('hidden');
-      loader?.setAttribute('aria-hidden', 'false');
-    });
+@keyframes psx-fade {
+  from { opacity:0; transform: translateY(6px); }
+  to   { opacity:1; transform: translateY(0); }
+}
 
-    // Hide loader if page restored from cache
-    window.addEventListener('pageshow', () => {
-      loader?.classList.add('hidden');
-      loader?.setAttribute('aria-hidden', 'true');
-    });
-
-    // Close modal helpers
-    function closeModal() {
-      if (!modal) return;
-      modal.style.display = 'none';
-      modal.setAttribute('aria-hidden', 'true');
-      document.getElementById('host')?.focus();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    closeBtn?.addEventListener('click', closeModal);
-    scanAgainBtn?.addEventListener('click', closeModal);
-    modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-
-    // ==== Inject server result ONLY into modal (no inline text) ====
-    {% if message %}
-      // Build HTML safely from server values
-      resultBody.innerHTML = `<p>{{ message }}</p>{% if opened %}<p><b>Open Ports:</b> {{ opened }}</p>{% endif %}`;
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden', 'false');
-    {% endif %}
-  </script>
-</body>
-</html>
+/* ==== Footer ==== */
+footer { margin:2.5rem auto; text-align:center; color:#8b949e; }
