@@ -1,75 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>PSX – Port Scanner Xtreme</title>
-  <link rel="stylesheet" href="/static/styles.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
-<body>
-  <!-- Top Bar -->
-  <header class="psx-header">
-    <div class="psx-shell">
-      <h1 class="brand">⚡ PSX — Port Scanner Xtreme</h1>
-      <p class="tagline">Fast, minimal, and classroom-friendly port scanner</p>
-    </div>
-  </header>
+/* ===== PSX quick patch (append to the end of styles.css) ===== */
 
-  <main class="psx-shell">
-    <!-- Form Panel -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Scan a Host</h2>
-        <p class="muted">Enter a hostname or IPv4 address. Leave ports empty to use the default curated set.</p>
-      </div>
+/* 1) Ensure the main form grids nicely even if the class is missing */
+.panel form { display: grid; gap: 16px; }
+.form-grid { display: grid; gap: 16px; }          /* keep your original */
+@media (min-width: 700px){
+  .panel form { grid-template-columns: 1fr 1fr; }
+  .panel form > *:first-child { grid-column: 1 / -1; }
+  .panel form .btn-primary,
+  .panel form .btn-run { grid-column: 1 / -1; }
+}
 
-      <form method="post" action="/scan" class="form-grid">
-        <!-- Host -->
-        <label class="field">
-          <span class="label">Target Host / IP</span>
-          <input type="text" name="host" placeholder="scanme.nmap.org" required />
-        </label>
+/* 2) Make each field block-level and pretty even if markup varies */
+.panel form label,
+.field { display: block; }
 
-        <!-- Ports -->
-        <label class="field">
-          <span class="label">Ports</span>
-          <input type="text" name="ports" placeholder="22,80,443 or 1-1024 (blank = defaults)" />
-          <span class="hint">Examples: <code>22,80,443</code> • <code>1-1024</code> • <code>22,80-90</code></span>
-        </label>
+.field .label,
+.panel form label > span:first-child {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #a7c6ff;
+}
 
-        <!-- Email -->
-        <label class="field">
-          <span class="label">Email (optional)</span>
-          <input type="email" name="email" placeholder="you@example.com" />
-        </label>
+.field .hint,
+.panel form .hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: .9rem;
+}
 
-        <!-- Submit -->
-        <button type="submit" class="btn-primary">🚀 Run Scan</button>
-      </form>
-    </section>
+/* 3) Inputs – full width, consistent look */
+.panel form input[type="text"],
+.panel form input[type="email"],
+input {
+  width: 100%;
+  padding: 12px 14px;
+  background: #0a0f15;
+  color: var(--text);
+  border: 1px solid #233043;
+  border-radius: 12px;
+  outline: 0;
+  transition: border .2s, box-shadow .2s, transform .02s;
+}
+.panel form input:focus,
+input:focus {
+  border-color: #4b9dff;
+  box-shadow: 0 0 0 4px rgba(75,157,255,.15);
+}
 
-    <!-- Results Panel -->
-    {% if message %}
-    <section class="panel result-panel">
-      <div class="panel-head">
-        <h2>Scan Result</h2>
-      </div>
-      <div class="result-body">
-        <p class="result-line">{{ message }}</p>
-        {% if opened %}
-        <div class="pill-row">
-          {% for port in opened %}
-            <span class="pill pill-open">Port {{ port }}</span>
-          {% endfor %}
-        </div>
-        {% endif %}
-      </div>
-    </section>
-    {% endif %}
-  </main>
+/* 4) Submit button – support both classes */
+.btn-primary,
+.btn-run,
+.panel form button[type="submit"] {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: .1px;
+  background: linear-gradient(90deg, var(--accentB), var(--accentA));
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(37,117,252,.28);
+}
+.btn-primary:hover,
+.btn-run:hover,
+.panel form button[type="submit"]:hover { filter: brightness(1.06); }
+.btn-primary:active,
+.btn-run:active,
+.panel form button[type="submit"]:active { transform: translateY(1px); }
 
-  <footer class="footer">
-    <p class="muted">Powered by ⚡ PSX — Port Scanner Xtreme</p>
-  </footer>
-</body>
-</html>
+/* 5) Results panel styles (nice pills for open ports) */
+.result-panel .result-body { margin-top: 6px; }
+.result-line { margin: 2px 0 10px; }
+
+.pill-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: .85rem;
+}
+.pill-open {
+  background: rgba(25,200,125,.12);
+  color: #79f3c2;
+  border: 1px solid rgba(25,200,125,.25);
+}
+
+/* 6) Safety: ensure panels look like cards even if container markup differs */
+.panel {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin: 22px 0;
+  box-shadow: var(--glow);
+}
